@@ -6,8 +6,6 @@
  * User Manual available at https://docs.gradle.org/5.6.3/userguide/tutorial_java_projects.html
  */
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
 
 plugins {
     // Apply the java plugin to add support for Java
@@ -45,3 +43,16 @@ application {
     // Define the main class for the application
     mainClass = 'demolition.App'
 }
+
+compileJava   {
+  sourceCompatibility = '1.8'
+  targetCompatibility = '1.8'
+}
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+compileJava.options.fork = true
+compileJava.options.forkOptions.executable = "C:\\Program Files\\Eclipse Foundation\\jdk-8.0.302.8-hotspot\\bin\\javac"
+
+// assert JavaVersion.current().isJava8(): "Java 8 is required"
