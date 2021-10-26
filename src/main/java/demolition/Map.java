@@ -15,29 +15,14 @@ public class Map {
     private int rows = 13;
     private int cols = 15;
 
-    private PImage player;
-    private PImage red;
-    private PImage yellow;
+    private ArrayList<ArrayList<Character>> tileMap = new ArrayList<ArrayList<Character>>();
 
-    private Hashtable<Character, PImage> tileMap = new Hashtable<Character, PImage>();
     private ArrayList<Player> player_list = new ArrayList<Player>();
 
-    private PApplet app;
+    private App app;
 
-    public Map(String filepath, PApplet app) {
+    public Map(String filepath, App app) {
         this.filepath = filepath;
-
-        this.player = app.loadImage("src/main/resources/player/player1.png");
-        this.red = app.loadImage("src/main/resources/red_enemy/red_down1.png");
-        this.yellow = app.loadImage("src/main/resources/yellow_enemy/yellow_down1.png");
-
-        this.tileMap.put('W', app.loadImage("src/main/resources/wall/solid.png"));
-        this.tileMap.put('B', app.loadImage("src/main/resources/broken/broken.png"));
-        this.tileMap.put(' ', app.loadImage("src/main/resources/empty/empty.png"));
-        this.tileMap.put('G', app.loadImage("src/main/resources/goal/goal.png"));
-        this.tileMap.put('P', app.loadImage("src/main/resources/empty/empty.png"));
-        this.tileMap.put('R', app.loadImage("src/main/resources/empty/empty.png"));
-        this.tileMap.put('Y', app.loadImage("src/main/resources/empty/empty.png"));
 
         this.app = app;
 
@@ -49,14 +34,16 @@ public class Map {
 
     public Player makePlayer(char color, int x, int y) {
         switch (color) {
-            case 'P':
-                return new BombGuy(x, y);
-            case 'R':
-                return new RedEnemy(x, y);
-            case 'Y':
-                return new YellowEnemy(x, y);
-            default:
-                return null;
+        // Sprites are 48 x 32 pixels, make feet touch the bottom
+        // of grid
+        case 'P':
+            return new BombGuy(x, y - 16, app);
+        case 'R':
+            return new RedEnemy(x, y - 16, app);
+        case 'Y':
+            return new YellowEnemy(x, y - 16, app);
+        default:
+            return null;
         }
     }
 
@@ -92,26 +79,44 @@ public class Map {
 
     public void drawLine(String line, int row) {
 
+        ArrayList<Character> x_list = new ArrayList<Character>();
+
         for (int i = 0; i < line.length(); i++) {
             char tile = line.charAt(i);
             int x = 32 * i;
             int y = 64 + row * 32;
 
-            app.image(tileMap.get(tile), x, y);
+            // Load the image corresponding with the char at this position
+            app.image(app.tileImages.get(tile), x, y);
+            // Save the tile char to our map
+            x_list.add(tile);
 
+            // If a player char, create the Player object at this position
             if (tile == 'P' || tile == 'R' || tile == 'Y') {
                 player_list.add(makePlayer(tile, x, y));
             }
 
         }
+
+        tileMap.add(x_list);
     }
 
-    public void draw(PApplet app) {
+    public ArrayList<ArrayList<Character>> initMap(PApplet app) {
         try {
             parseMapTxt();
         } catch (MapException e) {
             System.out.println(e);
         }
+
+        return tileMap;
+    }
+
+    public ArrayList<Player> getPlayerList() {
+        return player_list;
+    }
+
+    public void draw(PApplet app) {
+
     }
 
 }
