@@ -1,18 +1,22 @@
 package demolition.Players;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 
 import demolition.App;
 
 import processing.core.*;
 import processing.core.PApplet;
 
+interface Move {
+    int[] move();
+}
+
 public class Player {
 
     protected int x;
     protected int y;
+    protected int direction = PConstants.DOWN;
     protected App app;
 
     protected PImage sprite;
@@ -20,23 +24,16 @@ public class Player {
     protected static ArrayList<PImage> RedEnemySprites = new ArrayList<PImage>();
     protected static ArrayList<PImage> YellowEnemySprites = new ArrayList<PImage>();
 
-    public Player() {
+    Hashtable<Integer, Move> moveMap = new Hashtable<>();
 
-        // this.player = app.loadImage("src/main/resources/player/player1.png");
-        // this.player = app.loadImage("src/main/resources/player/player2.png");
-        // this.player = app.loadImage("src/main/resources/player/player3.png");
-        // this.player = app.loadImage("src/main/resources/player/player4.png");
+    public Player(int x, int y) {
+        this.x = x;
+        this.y = y;
 
-        // this.player = app.loadImage("src/main/resources/player/player_up1.png");
-        // this.player = app.loadImage("src/main/resources/player/player_up2.png");
-        // this.player = app.loadImage("src/main/resources/player/player_up3.png");
-        // this.player = app.loadImage("src/main/resources/player/player_up4.png");
-
-        // this.player = app.loadImage("src/main/resources/player/player1.png");
-
-        // this.red = app.loadImage("src/main/resources/red_enemy/red_down1.png");
-        // this.yellow = app.loadImage("src/main/resources/red_enemy/red_down1.png");
-        // app.loadImage("src/main/resources/yellow_enemy/yellow_down1.png");
+        moveMap.put(PConstants.LEFT, () -> new int[] { this.x - 32, this.y });
+        moveMap.put(PConstants.RIGHT, () -> new int[] { this.x + 32, this.y });
+        moveMap.put(PConstants.DOWN, () -> new int[] { this.x, this.y + 32 });
+        moveMap.put(PConstants.UP, () -> new int[] { this.x, this.y - 32 });
 
     }
 
@@ -73,16 +70,65 @@ public class Player {
 
     }
 
-    public static void initPlayers(ArrayList<? extends Player> player_list, PApplet app) {
-        for (Player p : player_list) {
+    public static void initPlayers(Set<Enemy> player_list, PApplet app) {
+        for (Enemy p : player_list) {
             p.draw();
         }
 
     }
 
+    public ArrayList<Integer> coord2Index(int x, int y) {
+        int x_ind = x / 32;
+        // Sprites heads are 16 pixels above the grid
+        int y_ind = (y - 64 + 16) / 32;
+
+        ArrayList<Integer> indices = new ArrayList<Integer>();
+        indices.add(x_ind);
+        indices.add(y_ind);
+
+        return indices;
+    }
+
+    public void blankTile() {
+        app.image(app.tileImages.get(' '), x, y + 16);
+        ArrayList<Integer> indices = coord2Index(x, y - 32 + 16);
+        char prevTopTile = app.tileMap.get(indices.get(1)).get(indices.get(0));
+
+        app.image(app.tileImages.get(prevTopTile), x, y - 32 + 16);
+    }
+
     public void draw() {
         // handles graphics, no logic
-        app.image(sprite, x, y);
+        app.image(this.sprite, x, y);
+
+    }
+
+    // public void move() {
+    // System.out.println("THIS SHOULDNT BE PRINTING");
+    // }
+
+    public static void playersTick(Set<Enemy> player_list, App app) {
+        for (Player p : player_list) {
+            p.tick();
+        }
+    }
+
+    public static void enemiesMove(Set<Enemy> player_list) {
+        for (Enemy e : player_list) {
+            if (e instanceof RedEnemy) {
+                RedEnemy r = (RedEnemy) e;
+                r.move();
+            } else {
+                YellowEnemy y = (YellowEnemy) e;
+                y.move();
+            }
+        }
+    }
+
+    public static void playersDraw(Set<Enemy> player_list) {
+        for (Player p : player_list) {
+            p.draw();
+        }
 
     }
 

@@ -18,6 +18,8 @@ public class Map {
     private ArrayList<ArrayList<Character>> tileMap = new ArrayList<ArrayList<Character>>();
 
     private ArrayList<Player> player_list = new ArrayList<Player>();
+    Hashtable<Enemy, String> EnemyMap = new Hashtable<>();
+    private BombGuy bombGuy;
 
     private App app;
 
@@ -32,12 +34,10 @@ public class Map {
 
     }
 
-    public Player makePlayer(char color, int x, int y) {
+    public Enemy makeEnemy(char color, int x, int y) {
         switch (color) {
         // Sprites are 48 x 32 pixels, make feet touch the bottom
         // of grid
-        case 'P':
-            return new BombGuy(x, y - 16, app);
         case 'R':
             return new RedEnemy(x, y - 16, app);
         case 'Y':
@@ -92,8 +92,10 @@ public class Map {
             x_list.add(tile);
 
             // If a player char, create the Player object at this position
-            if (tile == 'P' || tile == 'R' || tile == 'Y') {
-                player_list.add(makePlayer(tile, x, y));
+            if (tile == 'R' || tile == 'Y') {
+                EnemyMap.put(makeEnemy(tile, x, y), String.format("%d%d", x, y));
+            } else if (tile == 'P') {
+                bombGuy = new BombGuy(x, y - 16, app);
             }
 
         }
@@ -113,6 +115,14 @@ public class Map {
 
     public ArrayList<Player> getPlayerList() {
         return player_list;
+    }
+
+    public Hashtable<Enemy, String> getPlayerMap() {
+        return EnemyMap;
+    }
+
+    public BombGuy getBombGuy() {
+        return bombGuy;
     }
 
     public void draw(PApplet app) {
