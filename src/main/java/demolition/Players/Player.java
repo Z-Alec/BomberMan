@@ -37,7 +37,7 @@ public class Player {
 
     }
 
-    public static ArrayList<PImage> load_in_sprites(String folder, PApplet app) {
+    public static ArrayList<PImage> loadSprites(String folder, PApplet app) {
 
         // Get all files in the specified folder
         File f = new File(folder);
@@ -95,6 +95,10 @@ public class Player {
         char prevTopTile = app.tileMap.get(indices.get(1)).get(indices.get(0));
 
         app.image(app.tileImages.get(prevTopTile), x, y - 32 + 16);
+    }
+
+    public String getCoordsAsString() {
+        return String.format("%d%d", x, y + 16);
     }
 
     public void draw() {

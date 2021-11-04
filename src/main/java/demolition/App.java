@@ -19,6 +19,7 @@ public class App extends PApplet {
     // Player list and Enemy positions
     public ArrayList<? extends Player> player_list;
     public Hashtable<Enemy, String> playerMap;
+    public ArrayList<Bomb> bombList = new ArrayList<>();
 
     // Main Objects
     private BombGuy bombGuy;
@@ -31,8 +32,12 @@ public class App extends PApplet {
     public ArrayList<PImage> BombGuySprites;
     public ArrayList<PImage> YellowSprites;
     public ArrayList<PImage> RedSprites;
+    public ArrayList<PImage> BombSprites;
+    public ArrayList<PImage> ExplosionSprites = new ArrayList<>();
 
     // Player Lives and Timing
+    public int currentLevel = 0;
+    public int totalLevels;
     public int totalLives;
     public int livesRemaining;
     public int levelTime;
@@ -51,6 +56,46 @@ public class App extends PApplet {
 
     public void settings() {
         size(WIDTH, HEIGHT);
+    }
+
+    public void loadNextLevel() {
+        currentLevel += 1;
+
+        if (currentLevel == totalLevels) {
+            youWin();
+            return;
+        }
+
+        // Load Map info from config.json
+        JSONObject config = loadJSONObject(new File("config.json"));
+        JSONArray level_array = config.getJSONArray("levels");
+        totalLevels = level_array.size();
+        levelTime = level_array.getJSONObject(currentLevel).getInt("time");
+        time = levelTime;
+
+        this.map = new Map(level_array.getJSONObject(currentLevel).getString("path"), this);
+
+        background(239, 129, 0);
+        this.image(loadImage("src/main/resources/icons/player.png"), 128, 16);
+        this.font = createFont("src/main/resources/PressStart2P-Regular.ttf", 18);
+        this.textFont(font);
+        fill(0);
+        this.text(livesRemaining, 170, 42);
+
+        this.image(loadImage("src/main/resources/icons/clock.png"), 288, 16);
+        this.text(time, 328, 42);
+
+        // Load Map and Players in
+        // player_list = map.getPlayerList();
+        playerMap = map.getPlayerMap();
+        tileMap = map.initMap(this);
+
+        // Player.initPlayers(player_list, this);
+        Player.initPlayers(playerMap.keySet(), this);
+
+        // bombGuy = getBombGuy(player_list);
+        bombGuy = map.getBombGuy();
+        bombGuy.draw();
     }
 
     public void setup() {
@@ -94,9 +139,13 @@ public class App extends PApplet {
         playerMap = map.getPlayerMap();
         tileMap = map.initMap(this);
 
-        BombGuySprites = Player.load_in_sprites("src/main/resources/player", this);
-        YellowSprites = Player.load_in_sprites("src/main/resources/yellow_enemy", this);
-        RedSprites = Player.load_in_sprites("src/main/resources/red_enemy", this);
+        BombGuySprites = Player.loadSprites("src/main/resources/player", this);
+        YellowSprites = Player.loadSprites("src/main/resources/yellow_enemy", this);
+        RedSprites = Player.loadSprites("src/main/resources/red_enemy", this);
+        BombSprites = Player.loadSprites("src/main/resources/bomb", this);
+        ExplosionSprites.add(loadImage("src/main/resources/explosion/centre.png"));
+        ExplosionSprites.add(loadImage("src/main/resources/explosion/horizontal.png"));
+        ExplosionSprites.add(loadImage("src/main/resources/explosion/vertical.png"));
 
         directionMap.put(PConstants.DOWN, 0);
         directionMap.put(PConstants.LEFT, 4);
@@ -116,6 +165,7 @@ public class App extends PApplet {
         // Load Map and Players in
         // player_list.clear();
         playerMap.clear();
+        bombList.clear();
         tileMap = map.initMap(this);
 
         Player.initPlayers(playerMap.keySet(), this);
@@ -142,22 +192,31 @@ public class App extends PApplet {
         if (time == 0 || livesRemaining == 0) {
             gameOver();
         }
+
+        if (bombGuy.getCoordsAsString().equals(map.goal)) {
+            loadNextLevel();
+        }
     }
 
     public void checkCollision() {
         if (playerMap.containsValue(bombGuy.getCoordsAsString())) {
-            resetMap();
-            livesRemaining--;
-            // Clear previous lives
-            fill(239, 129, 0);
-            stroke(239, 129, 0);
-            rect(160, 0, 64, 63);
-
-            // Update lives
-            fill(0);
-            stroke(0);
-            text(livesRemaining, 170, 42);
+            loseLife();
         }
+    }
+
+    public void loseLife() {
+        resetMap();
+        livesRemaining--;
+        // Clear previous lives
+        fill(239, 129, 0);
+        stroke(239, 129, 0);
+        rect(160, 0, 64, 63);
+
+        // Update lives
+        fill(0);
+        stroke(0);
+        text(livesRemaining, 170, 42);
+
     }
 
     public void draw() {
@@ -177,6 +236,9 @@ public class App extends PApplet {
             Player.enemiesMove(playerMap.keySet());
             App.secondTimer = millis();
         }
+
+        bombList = Bomb.bombsTick(bombList);
+        Bomb.bombsDraw(bombList);
 
         checkCollision();
 
@@ -200,6 +262,8 @@ public class App extends PApplet {
     public void keyPressed() {
         if (key == CODED) {
             bombGuy.handleKey(keyCode);
+        } else if (key == ' ') {
+            bombGuy.placeBomb(bombList);
         }
 
     }
@@ -214,6 +278,12 @@ public class App extends PApplet {
     }
 
     public void youWin() {
+        fill(239, 129, 0);
+        rect(0, 0, 481, 481);
+        textAlign(CENTER, CENTER);
+        fill(0);
+        text("YOU WIN", 240, 240);
+        noLoop();
 
     }
 

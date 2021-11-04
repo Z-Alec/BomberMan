@@ -14,6 +14,7 @@ public class Map {
     private String filepath;
     private int rows = 13;
     private int cols = 15;
+    public String goal;
 
     private ArrayList<ArrayList<Character>> tileMap = new ArrayList<ArrayList<Character>>();
 
@@ -93,9 +94,11 @@ public class Map {
 
             // If a player char, create the Player object at this position
             if (tile == 'R' || tile == 'Y') {
-                EnemyMap.put(makeEnemy(tile, x, y), String.format("%d%d", x, y));
+                EnemyMap.put(makeEnemy(tile, x, y), String.format("%d%d", x, y + 16));
             } else if (tile == 'P') {
                 bombGuy = new BombGuy(x, y - 16, app);
+            } else if (tile == 'G') {
+                goal = String.format("%d%d", x, y);
             }
 
         }

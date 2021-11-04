@@ -16,7 +16,6 @@ interface EnemyInterface {
         switch (next_tile) {
         case 'W':
         case 'B':
-            moveDecision();
             return false;
         default:
             // Else, we can move; refresh the tiles we are moving away from

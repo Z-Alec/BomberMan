@@ -1,8 +1,8 @@
 package demolition.Players;
 
 import processing.core.*;
+
 import demolition.App;
-import java.util.*;
 
 public class YellowEnemy extends Enemy implements EnemyInterface {
     private int index = 0;
@@ -17,11 +17,13 @@ public class YellowEnemy extends Enemy implements EnemyInterface {
     public void move() {
         // Every second, check if next tile is free before moving in straight line
         int[] newCoords = moveMap.get(direction).move();
+
         if (isTileFree(newCoords[0], newCoords[1], app)) {
             this.x = newCoords[0];
             this.y = newCoords[1];
         } else {
             moveDecision();
+            move();
         }
     }
 
@@ -37,11 +39,20 @@ public class YellowEnemy extends Enemy implements EnemyInterface {
 
         blankTile();
 
-        app.playerMap.put(this, String.format("%d%d", x, y));
+        app.playerMap.put(this, String.format("%d%d", x, y + 16));
 
     }
 
     public void moveDecision() {
+        // Clockwise Movement
+        this.direction += 1;
+        if (direction > PConstants.DOWN) {
+            direction = PConstants.LEFT;
+        }
+
+        // Point to the animation sprites for new direction
+        this.index = app.directionMap.get(direction);
+        this.end = this.index + 3;
 
     }
 

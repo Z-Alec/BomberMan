@@ -1,7 +1,6 @@
 package demolition.Players;
 
 import processing.core.*;
-import java.util.*;
 
 import demolition.App;
 
@@ -13,7 +12,6 @@ public class RedEnemy extends Enemy implements EnemyInterface {
         super(x, y);
         this.app = app;
         this.sprite = this.app.loadImage("src/main/resources/red_enemy/red_down1.png");
-
     }
 
     public void move() {
@@ -26,10 +24,9 @@ public class RedEnemy extends Enemy implements EnemyInterface {
 
         } else {
             moveDecision();
+            move();
         }
-        // System.out.println(String.format("current COORDS: %d, %d", x, y));
-        // System.out.println(String.format("new COORDS: %d, %d", newCoords[0],
-        // newCoords[1]));
+
     }
 
     public void tick() {
@@ -43,13 +40,13 @@ public class RedEnemy extends Enemy implements EnemyInterface {
 
         blankTile();
 
-        app.playerMap.put(this, String.format("%d%d", x, y));
+        app.playerMap.put(this, String.format("%d%d", x, y + 16));
         // System.out.println(String.format("RED: %d%d", x, y));
 
     }
 
     public void moveDecision() {
-        int choice = (int) app.random(PConstants.LEFT, PConstants.DOWN);
+        int choice = (int) app.random(PConstants.LEFT, PConstants.DOWN + 1);
         this.direction = choice;
 
         this.index = app.directionMap.get(direction);

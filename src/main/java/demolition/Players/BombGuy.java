@@ -2,6 +2,7 @@ package demolition.Players;
 
 import demolition.App;
 import demolition.Map;
+import demolition.Bomb;
 
 import processing.core.*;
 import java.util.ArrayList;
@@ -91,8 +92,8 @@ public class BombGuy extends Player {
 
     }
 
-    public String getCoordsAsString() {
-        return String.format("%d%d", x, y);
+    public void placeBomb(ArrayList<Bomb> bombList) {
+        bombList.add(new Bomb(x, y + 16, app.millis(), app));
     }
 
 }
