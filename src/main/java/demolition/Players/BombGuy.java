@@ -19,6 +19,8 @@ public class BombGuy extends Player {
 
         this.app = app;
         this.sprite = this.app.loadImage("src/main/resources/player/player1.png");
+        // this.sprite = null;
+
     }
 
     public void handleKey(int key) {
@@ -61,10 +63,10 @@ public class BombGuy extends Player {
 
     public boolean isTileFree(int x_new, int y_new) {
 
-        ArrayList<Integer> indices = coord2Index(x_new, y_new);
+        int[] indices = coord2Index(x_new, y_new);
         ArrayList<ArrayList<Character>> tileMap = app.getTileMap();
 
-        char next_tile = tileMap.get(indices.get(1)).get(indices.get(0));
+        char next_tile = tileMap.get(indices[1]).get(indices[0]);
 
         switch (next_tile) {
         case 'W':

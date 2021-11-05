@@ -8,10 +8,10 @@ interface EnemyInterface {
 
     public default boolean isTileFree(int x_new, int y_new, App app) {
 
-        ArrayList<Integer> indices = coord2Index(x_new, y_new);
+        int[] indices = coord2Index(x_new, y_new);
         ArrayList<ArrayList<Character>> tileMap = app.getTileMap();
 
-        char next_tile = tileMap.get(indices.get(1)).get(indices.get(0));
+        char next_tile = tileMap.get(indices[1]).get(indices[0]);
 
         switch (next_tile) {
         case 'W':
@@ -27,7 +27,7 @@ interface EnemyInterface {
 
     public void moveDecision();
 
-    public ArrayList<Integer> coord2Index(int x, int y);
+    public int[] coord2Index(int x, int y);
 
     public void blankTile();
 

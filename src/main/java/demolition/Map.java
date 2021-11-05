@@ -18,8 +18,8 @@ public class Map {
 
     private ArrayList<ArrayList<Character>> tileMap = new ArrayList<ArrayList<Character>>();
 
-    private ArrayList<Player> player_list = new ArrayList<Player>();
-    Hashtable<Enemy, String> EnemyMap = new Hashtable<>();
+    private ArrayList<Player> playerList = new ArrayList<Player>();
+    private Hashtable<Enemy, String> EnemyMap = new Hashtable<>();
     private BombGuy bombGuy;
 
     private App app;
@@ -28,11 +28,6 @@ public class Map {
         this.filepath = filepath;
 
         this.app = app;
-
-    }
-
-    public void tick() {
-
     }
 
     public Enemy makeEnemy(char color, int x, int y) {
@@ -51,7 +46,6 @@ public class Map {
     public void parseMapTxt() throws MapException {
         File f = new File(filepath);
         try {
-
             Scanner scan = new Scanner(f);
             // Draw map one row at a time
             for (int i = 0; i < rows; i++) {
@@ -87,8 +81,6 @@ public class Map {
             int x = 32 * i;
             int y = 64 + row * 32;
 
-            // Load the image corresponding with the char at this position
-            app.image(app.tileImages.get(tile), x, y);
             // Save the tile char to our map
             x_list.add(tile);
 
@@ -106,7 +98,7 @@ public class Map {
         tileMap.add(x_list);
     }
 
-    public ArrayList<ArrayList<Character>> initMap(PApplet app) {
+    public ArrayList<ArrayList<Character>> initMap() {
         try {
             parseMapTxt();
         } catch (MapException e) {
@@ -117,7 +109,7 @@ public class Map {
     }
 
     public ArrayList<Player> getPlayerList() {
-        return player_list;
+        return playerList;
     }
 
     public Hashtable<Enemy, String> getPlayerMap() {
@@ -126,10 +118,6 @@ public class Map {
 
     public BombGuy getBombGuy() {
         return bombGuy;
-    }
-
-    public void draw(PApplet app) {
-
     }
 
 }

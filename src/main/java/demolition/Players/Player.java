@@ -20,10 +20,6 @@ public class Player {
     protected App app;
 
     protected PImage sprite;
-    protected static ArrayList<PImage> BombGuySprites = new ArrayList<PImage>();
-    protected static ArrayList<PImage> RedEnemySprites = new ArrayList<PImage>();
-    protected static ArrayList<PImage> YellowEnemySprites = new ArrayList<PImage>();
-
     Hashtable<Integer, Move> moveMap = new Hashtable<>();
 
     public Player(int x, int y) {
@@ -65,34 +61,30 @@ public class Player {
 
     }
 
-    public void tick() {
-        // Handles logic
-
-    }
-
-    public static void initPlayers(Set<Enemy> player_list, PApplet app) {
-        for (Enemy p : player_list) {
+    public static void initPlayers(Set<Enemy> playerList, PApplet app) {
+        for (Enemy p : playerList) {
             p.draw();
         }
 
     }
 
-    public ArrayList<Integer> coord2Index(int x, int y) {
+    public int[] coord2Index(int x, int y) {
+
         int x_ind = x / 32;
         // Sprites heads are 16 pixels above the grid
         int y_ind = (y - 64 + 16) / 32;
 
-        ArrayList<Integer> indices = new ArrayList<Integer>();
-        indices.add(x_ind);
-        indices.add(y_ind);
+        int[] indices = new int[2];
+        indices[0] = (x_ind);
+        indices[1] = (y_ind);
 
         return indices;
     }
 
     public void blankTile() {
         app.image(app.tileImages.get(' '), x, y + 16);
-        ArrayList<Integer> indices = coord2Index(x, y - 32 + 16);
-        char prevTopTile = app.tileMap.get(indices.get(1)).get(indices.get(0));
+        int[] indices = coord2Index(x, y - 32 + 16);
+        char prevTopTile = app.tileMap.get(indices[1]).get(indices[0]);
 
         app.image(app.tileImages.get(prevTopTile), x, y - 32 + 16);
     }
@@ -107,18 +99,18 @@ public class Player {
 
     }
 
-    // public void move() {
-    // System.out.println("THIS SHOULDNT BE PRINTING");
-    // }
+    public void tick() {
 
-    public static void playersTick(Set<Enemy> player_list, App app) {
-        for (Player p : player_list) {
+    }
+
+    public static void playersTick(Set<Enemy> playerList, App app) {
+        for (Player p : playerList) {
             p.tick();
         }
     }
 
-    public static void enemiesMove(Set<Enemy> player_list) {
-        for (Enemy e : player_list) {
+    public static void enemiesMove(Set<Enemy> playerList) {
+        for (Enemy e : playerList) {
             if (e instanceof RedEnemy) {
                 RedEnemy r = (RedEnemy) e;
                 r.move();
@@ -129,8 +121,8 @@ public class Player {
         }
     }
 
-    public static void playersDraw(Set<Enemy> player_list) {
-        for (Player p : player_list) {
+    public static void playersDraw(Set<Enemy> playerList) {
+        for (Player p : playerList) {
             p.draw();
         }
 

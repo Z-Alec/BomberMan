@@ -13,18 +13,17 @@ public class App extends PApplet {
 
     public static final int WIDTH = 480;
     public static final int HEIGHT = 480;
-
     public static final int FPS = 60;
 
     // Player list and Enemy positions
-    public ArrayList<? extends Player> player_list;
+    // We store the players and their positions in playerMap; their
+    // Positions are represented their x and y coords as a String
     public Hashtable<Enemy, String> playerMap;
     public ArrayList<Bomb> bombList = new ArrayList<>();
 
     // Main Objects
     private BombGuy bombGuy;
     private Map map;
-
     public ArrayList<ArrayList<Character>> tileMap;
     public Hashtable<Character, PImage> tileImages = new Hashtable<Character, PImage>();
 
@@ -36,6 +35,8 @@ public class App extends PApplet {
     public ArrayList<PImage> ExplosionSprites = new ArrayList<>();
 
     // Player Lives and Timing
+    public String configDir = "";
+    public String levelPath;
     public int currentLevel = 0;
     public int totalLevels;
     public int totalLives;
@@ -67,14 +68,38 @@ public class App extends PApplet {
         }
 
         // Load Map info from config.json
-        JSONObject config = loadJSONObject(new File("config.json"));
+        loadConfig();
+
+        this.map = new Map(levelPath, this);
+
+        dispBackground();
+
+        // Load Map and Players in
+        playerMap = map.getPlayerMap();
+        tileMap = map.initMap();
+        drawMap();
+
+        Player.initPlayers(playerMap.keySet(), this);
+
+        bombGuy = map.getBombGuy();
+        bombGuy.draw();
+    }
+
+    public void loadConfig() {
+        // Unpack config.json
+
+        JSONObject config = loadJSONObject(new File(configDir + "config.json"));
         JSONArray level_array = config.getJSONArray("levels");
-        totalLevels = level_array.size();
-        levelTime = level_array.getJSONObject(currentLevel).getInt("time");
-        time = levelTime;
+        this.totalLives = config.getInt("lives");
+        this.totalLevels = level_array.size();
+        this.levelTime = level_array.getJSONObject(currentLevel).getInt("time");
+        this.levelPath = configDir + level_array.getJSONObject(currentLevel).getString("path");
+        this.time = levelTime;
 
-        this.map = new Map(level_array.getJSONObject(currentLevel).getString("path"), this);
+    }
 
+    public void dispBackground() {
+        // Sets background and UI icons
         background(239, 129, 0);
         this.image(loadImage("src/main/resources/icons/player.png"), 128, 16);
         this.font = createFont("src/main/resources/PressStart2P-Regular.ttf", 18);
@@ -84,61 +109,18 @@ public class App extends PApplet {
 
         this.image(loadImage("src/main/resources/icons/clock.png"), 288, 16);
         this.text(time, 328, 42);
-
-        // Load Map and Players in
-        // player_list = map.getPlayerList();
-        playerMap = map.getPlayerMap();
-        tileMap = map.initMap(this);
-
-        // Player.initPlayers(player_list, this);
-        Player.initPlayers(playerMap.keySet(), this);
-
-        // bombGuy = getBombGuy(player_list);
-        bombGuy = map.getBombGuy();
-        bombGuy.draw();
     }
 
     public void setup() {
         frameRate(FPS);
 
-        // Load Map info from config.json
-        JSONObject config = loadJSONObject(new File("config.json"));
-        JSONArray level_array = config.getJSONArray("levels");
-        totalLives = config.getInt("lives");
-        livesRemaining = totalLives;
-        levelTime = level_array.getJSONObject(0).getInt("time");
-        time = levelTime;
+        loadConfig();
+        this.livesRemaining = totalLives;
 
         // Load images during setup
-        this.map = new Map(level_array.getJSONObject(0).getString("path"), this);
+        this.map = new Map(levelPath, this);
 
-        this.tileImages.put('W', loadImage("src/main/resources/wall/solid.png"));
-        this.tileImages.put('B', loadImage("src/main/resources/broken/broken.png"));
-        this.tileImages.put(' ', loadImage("src/main/resources/empty/empty.png"));
-        this.tileImages.put('G', loadImage("src/main/resources/goal/goal.png"));
-        this.tileImages.put('P', loadImage("src/main/resources/empty/empty.png"));
-        this.tileImages.put('R', loadImage("src/main/resources/empty/empty.png"));
-        this.tileImages.put('Y', loadImage("src/main/resources/empty/empty.png"));
-        // this.tileImages.put('P', loadImage("src/main/resources/empty/empty.png"));
-        // this.tileImages.put('R', loadImage("src/main/resources/empty/empty.png"));
-        // this.tileImages.put('Y', loadImage("src/main/resources/empty/empty.png"));
-
-        // Set Background and UI
-        background(239, 129, 0);
-        this.image(loadImage("src/main/resources/icons/player.png"), 128, 16);
-        this.font = createFont("src/main/resources/PressStart2P-Regular.ttf", 18);
-        this.textFont(font);
-        fill(0);
-        this.text(totalLives, 170, 42);
-
-        this.image(loadImage("src/main/resources/icons/clock.png"), 288, 16);
-        this.text(time, 328, 42);
-
-        // Load Map and Players in
-        // player_list = map.getPlayerList();
-        playerMap = map.getPlayerMap();
-        tileMap = map.initMap(this);
-
+        // Loads all sprites into their respective arrays
         BombGuySprites = Player.loadSprites("src/main/resources/player", this);
         YellowSprites = Player.loadSprites("src/main/resources/yellow_enemy", this);
         RedSprites = Player.loadSprites("src/main/resources/red_enemy", this);
@@ -147,15 +129,32 @@ public class App extends PApplet {
         ExplosionSprites.add(loadImage("src/main/resources/explosion/horizontal.png"));
         ExplosionSprites.add(loadImage("src/main/resources/explosion/vertical.png"));
 
+        // Creates Map of Sprites in Each direction
         directionMap.put(PConstants.DOWN, 0);
         directionMap.put(PConstants.LEFT, 4);
         directionMap.put(PConstants.RIGHT, 8);
         directionMap.put(PConstants.UP, 12);
 
-        // Player.initPlayers(player_list, this);
+        this.tileImages.put('W', loadImage("src/main/resources/wall/solid.png"));
+        this.tileImages.put('B', loadImage("src/main/resources/broken/broken.png"));
+        this.tileImages.put(' ', loadImage("src/main/resources/empty/empty.png"));
+        this.tileImages.put('G', loadImage("src/main/resources/goal/goal.png"));
+        this.tileImages.put('P', loadImage("src/main/resources/empty/empty.png"));
+        this.tileImages.put('R', loadImage("src/main/resources/empty/empty.png"));
+        this.tileImages.put('Y', loadImage("src/main/resources/empty/empty.png"));
+
+        // Set Background and UI
+        dispBackground();
+
+        // Load Map and Players in
+        playerMap = map.getPlayerMap();
+        tileMap = map.initMap();
+        drawMap();
+
+        // Initialises all players into the playerMap
         Player.initPlayers(playerMap.keySet(), this);
 
-        // bombGuy = getBombGuy(player_list);
+        // BombGuy is in its own isolated variable
         bombGuy = map.getBombGuy();
         bombGuy.draw();
 
@@ -163,10 +162,10 @@ public class App extends PApplet {
 
     public void resetMap() {
         // Load Map and Players in
-        // player_list.clear();
         playerMap.clear();
         bombList.clear();
-        tileMap = map.initMap(this);
+        tileMap = map.initMap();
+        drawMap();
 
         Player.initPlayers(playerMap.keySet(), this);
         bombGuy = map.getBombGuy();
@@ -248,11 +247,6 @@ public class App extends PApplet {
 
         this.tick();
 
-        // for (String s : playerMap.values()) {
-        // System.out.print("VAL: " + s + " ");
-        // }
-        // System.out.print("\n");
-
     }
 
     public ArrayList<ArrayList<Character>> getTileMap() {
@@ -291,7 +285,20 @@ public class App extends PApplet {
         return bombGuy;
     }
 
+    public void setConfig(String path) {
+        this.configDir = path;
+    }
+
+    public void drawMap() {
+        for (int i = 0; i < tileMap.size(); i++) {
+            for (int j = 0; j < tileMap.get(i).size(); j++) {
+                image(tileImages.get(tileMap.get(i).get(j)), 32 * j, 64 + 32 * i);
+            }
+        }
+    }
+
     public static void main(String[] args) {
         PApplet.main("demolition.App");
     }
+
 }

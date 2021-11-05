@@ -7,7 +7,6 @@ import processing.core.PImage;
 
 public class Bomb {
 
-    private int placedTime;
     private int spriteTimer;
 
     private int x;
@@ -22,7 +21,6 @@ public class Bomb {
     public Bomb(int x, int y, int time, App app) {
         this.x = x;
         this.y = y;
-        this.placedTime = time;
         this.spriteTimer = time;
         this.app = app;
         this.sprite = app.loadImage("src/main/resources/red_enemy/red_down1.png");
@@ -59,6 +57,7 @@ public class Bomb {
 
     }
 
+    // Ticks when the bomb has exploded
     public bombStatus explosionTick() {
         if (app.millis() - spriteTimer > 500) {
             cleanup();
@@ -73,6 +72,10 @@ public class Bomb {
     }
 
     public ArrayList<Integer> coord2Index(int x, int y) {
+        if (x < 0 || x >= 480 || y >= 480 || y < 64) {
+            return null;
+        }
+
         int x_ind = x / 32;
         // Sprites heads are 16 pixels above the grid
         int y_ind = (y - 64 + 16) / 32;
@@ -88,6 +91,7 @@ public class Bomb {
 
         if (explosionTiles.contains(app.getBombGuy().getCoordsAsString())) {
             app.loseLife();
+            cleanup();
             return bombStatus.BOMBGUYCAUGHT;
         } else {
             app.playerMap.values().removeIf(coord -> explosionTiles.contains(coord));
@@ -96,6 +100,7 @@ public class Bomb {
         }
     }
 
+    // Proccesses explosion mechanics in all four directions
     public void showExplosion() {
         // Clear the bomb and show centre explosion
         this.sprite = app.ExplosionSprites.get(0);
@@ -125,11 +130,12 @@ public class Bomb {
 
     public boolean checkMaxDist(int x_n, int y_n, int horzVert) {
         // Check out of bounds
-        if (x_n < 0 || x_n > 480 || y_n > 480 || y_n < 64) {
+
+        ArrayList<Integer> indices = coord2Index(x_n, y_n);
+        if (indices == null) {
             return false;
         }
 
-        ArrayList<Integer> indices = coord2Index(x_n, y_n);
         char tile = app.tileMap.get(indices.get(1)).get(indices.get(0));
         // System.out.println(tile);
 
@@ -172,12 +178,12 @@ public class Bomb {
 
     public void restoreTile(int x, int y) {
         // Check out of bounds
-        if (x < 0 || x >= 480 || y >= 480 || y < 64) {
+        // Get the original tile from tileMap
+        ArrayList<Integer> indices = coord2Index(x, y);
+        if (indices == null) {
             return;
         }
 
-        // Get the original tile from tileMap
-        ArrayList<Integer> indices = coord2Index(x, y);
         char tile = app.tileMap.get(indices.get(1)).get(indices.get(0));
         app.image(app.tileImages.get(tile), x, y);
     }
